@@ -1,8 +1,9 @@
 import collections
 import itertools
-from typing import Generator, Self, TypeAlias
+from typing import Self, NewType
+from collections.abc import Iterator
 
-Entity: TypeAlias = int
+Entity = NewType("Entity", int)
 
 
 class EntityManager:
@@ -13,7 +14,7 @@ class EntityManager:
         )
 
     def spawn_entity(self: Self) -> Entity:
-        return next(self._entity_counter)
+        return Entity(next(self._entity_counter))
 
     def insert_component(self: Self, entity: Entity, component: object) -> None:
         self._components[type(component)][entity] = component
@@ -22,15 +23,11 @@ class EntityManager:
         for component in components:
             self._components[type(component)][entity] = component
 
-    def query_component(
-        self: Self, component_type: type
-    ) -> Generator[object, None, None]:
+    def query_component(self: Self, component_type: type) -> Iterator[object]:
         for value in self._components[component_type].values():
             yield value
 
-    def query_components(
-        self: Self, *component_types: type
-    ) -> Generator[object, None, None]:
+    def query_components(self: Self, *component_types: type) -> Iterator[object]:
         entity_sets: list[set[Entity]] = [
             set(self._components[component_type]) for component_type in component_types
         ]
